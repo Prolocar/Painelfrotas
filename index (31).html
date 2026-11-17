@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Programação de Equipamentos</title>
+<style>
+:root{--bg:#0a0f1c;--panel:#111a2e;--line:#1f2b46;--ink:#e8edf7;--mut:#8592ad;--gu:#ef5350;--or:#ec4899;--ga:#34d399;--em:#60a5fa;--ca:#facc15}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.3 Inter,system-ui,"Segoe UI",Arial,sans-serif;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:18px;padding:12px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+h1{margin:0;font-size:clamp(18px,1.7vw,30px);letter-spacing:-.4px}
+.clock{font-variant-numeric:tabular-nums;color:var(--mut);font-size:clamp(13px,1.1vw,20px)}
+.kpis{display:flex;gap:10px;margin-left:auto}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 16px;text-align:center;min-width:92px}
+.kpi b{display:block;font-size:clamp(20px,2vw,34px);line-height:1.1}.kpi span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
+.kpi.alert b{color:#fbbf24}
+.bar{display:flex;gap:8px;padding:10px 20px;align-items:center;flex-wrap:wrap}
+input,select,button,textarea{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:8px 11px}
+button{cursor:pointer;font-weight:600}button:hover{border-color:#3b4d78}
+.pri{background:#3b6cf6;border-color:#3b6cf6}.dng{color:#fca5a5;border-color:#5b2530}
+.leg{display:flex;gap:6px;margin-left:auto}
+.lg{display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 11px;border-radius:20px;border:1px solid var(--line);background:var(--panel);font-size:12px;font-weight:600}
+.lg i{width:10px;height:10px;border-radius:3px}.lg.off{opacity:.35}
+main{font-size:var(--fs,14px);grid-template-rows:minmax(0,1fr);flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:0 20px 8px;min-height:0}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.ct{padding:.6em .9em;font-size:1.15em;font-weight:800;letter-spacing:1px;text-transform:uppercase;display:flex;justify-content:center;align-items:center;gap:.7em;color:#0a0f1c}
+.ct em{font-style:normal;background:#0a0f1c33;border-radius:20px;padding:0 10px}
+.c0 .ct{background:#d5e63a}.c1 .ct{background:#9fd08a}.c2 .ct{background:#ef4444;color:#fff}.c3 .ct{background:#22b94a;color:#fff}
+.lanes{flex:1;overflow:auto;padding:8px;display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:8px}
+.lane{min-width:0;border:1px dashed var(--line);border-radius:10px;padding:7px 8px 8px;transition:.15s}
+.lane.over{background:#1a2748;border-color:#3b6cf6}
+.lh{font-size:.8em;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--mut);display:flex;justify-content:space-between;margin-bottom:6px}
+.chips{display:flex;gap:.4em;align-items:flex-start;min-height:22px}
+.tg{flex:var(--sc,1) 1 0;min-width:calc(var(--sc,1)*6.6em + (var(--sc,1) - 1)*.4em);display:flex;flex-direction:column;gap:.35em}
+.cl{display:flex;flex-direction:column;gap:.35em;min-width:0}
+body.tv .cl{display:block;column-count:var(--sc,1);column-gap:.4em;column-fill:balance}body.tv .cl .chip{break-inside:avoid;margin-bottom:.35em;box-sizing:border-box}body.tv .cl .chip:last-child{margin-bottom:0}
+.th>span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.th{font-size:.72em;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--t);border-bottom:2px solid var(--t);padding:0 2px 3px;display:flex;justify-content:space-between;gap:.5em;white-space:nowrap}
+.tg .chip{width:100%}
+.chip{background:#17223b;border:1px solid var(--line);border-left:5px solid var(--t);border-radius:8px;padding:.26em .5em;cursor:grab;font-weight:700;font-variant-numeric:tabular-nums;font-size:1em;position:relative}
+.chip:hover{background:#1f2d4d}
+.chip small{display:block;font-size:.72em;font-weight:600;color:var(--mut);margin-top:2px}
+.chip .k{position:absolute;top:-6px;right:-4px;background:#3b6cf6;border-radius:6px;font-size:.6em;padding:1px 5px}
+.chip.cor{background:#3a1519;border-color:#7f2a33;border-left-color:var(--t)}.chip.cor small{color:#f1f5f9}
+.chip.soon{animation:pl 1s infinite;background:#3a2a05;border-color:#f59e0b}
+.chip.over-due{animation:pl .8s infinite;background:#7f1d1d;border-color:#ef4444}
+@keyframes pl{50%{box-shadow:0 0 0 4px #f59e0b55}}
+.lh{cursor:grab;user-select:none}.lh:active{cursor:grabbing}.col.over{outline:2px dashed #3b6cf6;outline-offset:-3px}
+.chip .kd{font-weight:900;font-size:.85em;color:#fbbf24}.chip .kdR{color:#c4b5fd}
+.chip.late{animation:pl .8s infinite;background:#7f1d1d;border-color:#ef4444}.chip.na{background:#3a1519;border-color:#ef4444}.chip.na .nat,.chip.mir .mt2{color:#fca5a5}.chip.mir{border-style:dashed}.ke{color:#fbbf24;margin-left:.4em}.kr{color:#c4b5fd;margin-left:.3em}
+.empty{color:#3d4b6b;font-size:.8em}
+.foot{padding:4px 20px 8px;color:var(--mut);font-size:11px}
+.cred{padding:0 20px 8px;color:var(--mut);font-size:11px;text-align:left;opacity:.8}body.tv .cred{padding:0 16px 8px;font-size:clamp(10px,.8vw,14px)}
+body.tv{overflow:hidden;cursor:none;height:100vh}body.tv .lanes{overflow:hidden;grid-template-columns:repeat(var(--n,1),minmax(0,1fr))}body.tv main{grid-template-columns:minmax(0,1fr) minmax(0,3.6fr) minmax(0,1.3fr) minmax(0,1fr)}body.tv h1{font-size:clamp(22px,2.2vw,44px)}body.tv .clock{font-size:clamp(16px,1.5vw,30px)}body.tv .kpi b{font-size:clamp(26px,2.6vw,52px)}body.tv .kpi span{font-size:clamp(11px,.9vw,18px)}
+body.tv .bar,body.tv .foot{display:none}body.tv .leg{margin-left:auto}body.tv .kpis{margin-left:0}body.tv .lg{cursor:none;font-size:clamp(11px,1vw,20px);padding:.3em .8em}
+body.tv header{padding:8px 16px}body.tv main{padding:8px 16px 12px}
+body.tv .c1 .lanes{grid-template-columns:repeat(6,minmax(0,1fr))}
+body.tv .lane[data-l="Usina - Habitual"]{grid-column:1/4;grid-row:1}
+body.tv .lane[data-l="Usina - Eventual"]{grid-column:1/4;grid-row:2}
+body.tv .lane[data-l="Vagões"]{grid-column:1/2;grid-row:3}
+body.tv .lane[data-l="Locomotivas"]{grid-column:2/3;grid-row:3}
+body.tv .lane[data-l="Pátio de Insumo"]{grid-column:3/4;grid-row:3}
+body.tv .lane[data-l="Porto - Habitual"]{grid-column:4/7;grid-row:1}
+body.tv .lane[data-l="Porto - Eventual"]{grid-column:4/7;grid-row:2/span 2}
+body.tv .c0 .lh>span:first-child{white-space:nowrap}body.tv .c0 .lanes{padding:10px}body.tv .c0 .lane{padding:9px 10px 10px}
+body.tv .lane.vz{padding:.3em .7em}body.tv .lane.vz .lh{margin:0}body.tv .lane.vz .chips{display:none}
+body.tv header{gap:6px 14px}body.tv #ver{display:none}body.tv h1{font-size:clamp(20px,1.7vw,38px);white-space:nowrap}body.tv .clock{font-size:clamp(14px,1.15vw,26px);white-space:nowrap}body.tv .tvbar input{width:7em}
+body.tv .chip{padding:.12em .45em;line-height:1.15;height:auto;min-height:0;align-self:start}body.tv .chip small{margin-top:0;line-height:1.1}body.tv .th{letter-spacing:.2px}body.tv .lg,body.tv .tvbar button,body.tv .kpi{white-space:nowrap}body.tv .leg{gap:.4em}body.tv .kpi{min-width:0;padding:4px 14px}
+.mb{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:9;padding:14px}.mb.open{display:flex}
+.md{width:min(38em,96vw);font-size:var(--mfs,14px);background:#0f1729;border:1px solid var(--line);border-radius:1em;padding:1.4em;max-height:94vh;overflow:auto}
+.md h2{margin:0 0 .6em;font-size:1.4em}.g{display:grid;grid-template-columns:1fr 1fr;gap:.7em}.g label{display:flex;flex-direction:column;gap:.3em;font-size:.85em;color:var(--mut);font-weight:600}.md input,.md select,.md textarea,.md button{padding:.55em .75em;border-radius:.6em}.g label.ck{flex-direction:row;align-items:center;gap:.6em}.g label.ck input{width:1.2em;height:1.2em;padding:0}.g .f{grid-column:1/-1}
+.tm{margin:.7em 0;padding:.6em .9em;border-radius:.6em;background:#12213f;font-size:1.5em;font-weight:800;color:#93c5fd}
+.act{display:flex;justify-content:space-between;gap:.5em;flex-wrap:wrap;margin-top:.8em}
+#fsh{display:none}
+.tvbar{display:none;gap:8px;align-items:center}
+body.tv .tvbar{display:flex}
+body.tv .tvbar input{width:9em}
+body.tv .tvbar input,body.tv .tvbar button{font-size:clamp(12px,1vw,20px);padding:.35em .8em}
+body.tv.mv,body.tv.mv *{cursor:auto!important}
+.md button.on{background:#b45309;border-color:#f59e0b;color:#fff}
+.chip.cor small.aw{color:#fbbf24}
+body.tv #fsh{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:20;background:#3b6cf6;color:#fff;font-weight:800;font-size:18px;padding:12px 26px;border-radius:30px;cursor:pointer;display:none}
+body.tv:not(.isfs) #fsh{display:block}
+
+/* ===== v9: caixas justas + visual (vale para TV e tela normal) ===== */
+body{background:radial-gradient(1200px 500px at 50% -150px,#16223f 0,var(--bg) 70%) fixed}
+header{background:#0c1324cc;backdrop-filter:blur(6px)}
+.col{background:linear-gradient(180deg,#121c33,#0e1628);box-shadow:0 6px 20px #0006;border-color:#243354}
+.ct{box-shadow:0 2px 0 #0003;text-shadow:0 1px 0 #ffffff22}
+.lane{background:#0d1526;border:1px solid #1d2a47;border-radius:10px}
+.lane.vz{opacity:.7}
+.lh{color:#a7b4d0;letter-spacing:.9px;padding-bottom:3px}
+.chip{background:linear-gradient(180deg,#1b2845,#16223b);border-color:#263759;border-radius:6px;padding:.14em .5em;line-height:1.15;height:auto;min-height:0;align-self:start;box-shadow:0 1px 2px #0005}
+.chip:hover{background:linear-gradient(180deg,#25365d,#1d2d4f)}
+.chip small{margin-top:0;line-height:1.1}
+.chip.cor,.chip.na{background:linear-gradient(180deg,#43181d,#33141a)}
+.th{font-size:.7em;margin-bottom:.15em}
+.kpi{background:linear-gradient(180deg,#16213a,#101a2e);box-shadow:0 2px 10px #0005}
+.lg{background:#111a2e;border-color:#243354;transition:.15s}.lg:hover{border-color:#3b6cf6}
+/* Vagões / Locomotivas / Pátio: frotas lado a lado em vez de barras largas */
+.lane[data-l="Vagões"] .tg,.lane[data-l="Locomotivas"] .tg,.lane[data-l="Pátio de Insumo"] .tg{flex:1 1 100%;min-width:0}
+.lane[data-l="Vagões"] .cl,.lane[data-l="Locomotivas"] .cl,.lane[data-l="Pátio de Insumo"] .cl{display:flex!important;flex-direction:column;flex-wrap:nowrap;gap:.35em;column-count:auto}
+.lane[data-l="Vagões"] .chip,.lane[data-l="Locomotivas"] .chip,.lane[data-l="Pátio de Insumo"] .chip{width:100%;flex:0 0 auto;min-width:0;margin:0}
+
+/* ===== v10: faixa executiva dinâmica ===== */
+.dash{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) minmax(0,2.2fr);gap:10px;padding:2px 20px 10px}
+.dc{position:relative;background:linear-gradient(180deg,#16213a,#0f182c);border:1px solid #243354;border-radius:12px;padding:10px 14px 12px;overflow:hidden;box-shadow:0 4px 14px #0005}
+.dc:before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:var(--c,#3b6cf6)}
+.dc small{display:block;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--mut)}
+.dc b{display:block;font-size:34px;line-height:1.1;font-variant-numeric:tabular-nums;margin-top:2px}
+.dc i{display:block;font-style:normal;font-size:11px;color:var(--mut);margin-top:2px}
+.dc .pb{height:5px;border-radius:5px;background:#0a0f1c;margin-top:8px;overflow:hidden}.dc .pb u{display:block;height:100%;width:0;background:var(--c,#3b6cf6);border-radius:5px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.dc.al{border-color:#7f2a33}.dc.al b{color:#fca5a5}.dc.al:before{animation:dp 1.6s infinite}
+@keyframes dp{50%{opacity:.25}}
+.dc.mix .sb{display:flex;height:16px;border-radius:8px;overflow:hidden;background:#0a0f1c;margin-top:8px}
+.dc.mix .sb span{height:100%;min-width:0;transition:flex .8s cubic-bezier(.2,.8,.2,1)}
+.dc.mix .sl{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:12px;font-weight:600}
+.dc.mix .sl em{font-style:normal;display:flex;align-items:center;gap:5px}.dc.mix .sl em:before{content:"";width:9px;height:9px;border-radius:3px;background:var(--t)}
+body.tv .dash{padding:0 16px 8px;gap:8px}body.tv .dc{padding:6px 12px 8px}body.tv .dc b{font-size:28px}body.tv .dc i{display:none}body.tv .dc .pb{margin-top:5px}
+
+/* ===== v11: correção do transbordo/repetição no rodapé da TV ===== */
+html{overflow:hidden}
+body.tv{background:#0a0f1c;overflow:hidden;contain:paint}
+body.tv header{backdrop-filter:none;-webkit-backdrop-filter:none;background:#0c1324}
+body.tv main{overflow:hidden;min-height:0}
+body.tv .col{contain:paint;max-height:100%}
+body.tv .lanes{min-height:0;max-height:100%}
+body.tv .cred{flex:0 0 auto;line-height:1.2;overflow:hidden;white-space:nowrap}
+</style></head><body>
+<script>if(new URLSearchParams(location.search).get("tv")==="1")document.body.classList.add("tv")</script>
+<header><h1>Programação de Equipamentos</h1><div class="clock" id="clock"></div><div class="clock" id="ver" style="font-size:11px;opacity:.55">versão 7 · 09/10</div><div class="kpis" id="kpis"></div></header>
+<div class="bar"><input id="q" placeholder="Buscar frota…"><button class="pri" id="add">+ Nova frota</button><button id="rl">Resetar disposição</button><button id="tvb">Modo TV</button><button id="exp">Exportar backup</button><div class="leg" id="leg"></div></div>
+<main id="board"></main><div id="fsh">Toque / pressione OK para tela cheia</div>
+<div class="foot" id="st">Conectando…</div>
+<div class="cred">Desenvolvido por Rondcley Castro l 027 99987-9078 · versão 8 · 27/10</div>
+<div class="mb" id="mb"><div class="md"><h2 id="mt">Frota</h2><div class="g">
+<label>Número da frota<input id="fc"></label><label>Tipo<select id="ft"><option value="guindaste">Guindaste</option><option value="ormig">Ormig</option><option value="guindauto">Guindauto</option><option value="empilhadeira">Empilhadeira</option><option value="cavalo">Cavalo</option></select></label>
+<label>Local<select id="fl"></select></label><label>Classificação<select id="fk"><option value="">Habitual</option><option value="R">Reserva</option><option value="E">Eventual</option></select></label>
+<label class="f ck"><input id="fna" type="checkbox">Não atendimento (fica no posto e cria espelho na Manutenção)</label><label class="f" id="fmlw" style="display:none">Local da manutenção (espelho)<select id="fml"><option value="">Somente não atendimento (sem espelho)</option><option value="Manutenção - Vale">Manutenção - Vale</option><option value="Manutenção - Filial">Manutenção - Filial</option></select></label><label class="f">Vencimento do MEV (nova data)<input id="fm" type="date"></label><label class="f ck"><input id="fmx" type="checkbox">MEV vencido (sem data)</label><div class="f"><button type="button" id="fmc">Remover MEV / limpar data</button></div>
+<label class="f">Motivo da corretiva<textarea id="fr" rows="2"></textarea></label>
+<label>Início da corretiva<input id="fs" type="datetime-local"></label><label>Previsão de liberação<input id="fe" type="datetime-local"></label><div class="f"><button type="button" id="fw">Aguardando previsão</button></div></div>
+<div class="tm" id="tm">—</div>
+<div class="act"><div><button class="dng" id="fx">Fechar corretiva</button> <button class="dng" id="fd">Excluir</button></div><div><button id="fc2">Cancelar</button> <button class="pri" id="fv">Salvar</button></div></div></div></div>
+<script>
+const SECS=[{t:"Disponível",l:["Disponível","Vistoria MEV","Mob","Desmob"]},{t:"Programado",n:2,l:["Usina - Habitual","Porto - Habitual","Usina - Eventual","Porto - Eventual","Vagões","Locomotivas","Pátio de Insumo"]},{t:"Manutenção",l:["Manutenção - Vale"]},{t:"Filial",l:["Spot","Disponível - Filial","Manutenção - Filial"]}];
+const NAMES=SECS.flatMap(s=>s.l);
+const LK="programacao-layout-v3";
+try{if(new URLSearchParams(location.search).get("tv")==="1")throw 0;const sv=JSON.parse(localStorage.getItem(LK));if(Array.isArray(sv)&&sv.length===SECS.length){const f=sv.flat();if(f.length===NAMES.length&&NAMES.every(n=>f.filter(y=>y===n).length===1))SECS.forEach((s,i)=>s.l=sv[i])}}catch(e){}
+const saveLayout=()=>{try{localStorage.setItem(LK,JSON.stringify(SECS.map(s=>s.l)))}catch(e){}render()};
+const CODES={"Disponível":["40/100/45"],"Vistoria MEV":["80/10/17","40/250/18"],"Usina - Habitual":["40/250/38","40/250/16","40/120/02","40/85/19","40/100/42","76/16/02","76/07/14","76/07/12","76/04/13","76/04/12","76/04/05","76/03/09","76/03/08","76/03/07","76/03/06","76/03/03","76/04/18","80/10/18","80/10/13","80/10/12","80/10/04","80/10/03","80/10/02","80/10/01"],"Vagões":["76/04/17","76/04/16","76/04/11"],"Locomotivas":["76/04/09","76/05/04"],"Pátio de Insumo":["76/07/08"],"Porto - Habitual":["40/250/37","40/250/36","40/110/22","40/110/19","40/100/33","40/30/58","46/14/03","46/10/06","46/10/04","76/07/13","76/04/03","80/22/09","80/10/20","80/10/19","80/10/17","80/10/15","80/10/14","80/10/11","80/10/10","80/10/08","80/10/06","80/10/05"],"Manutenção - Vale":["46/10/08","76/03/03","76/03/08"],"Disponível - Filial":["40/250/15"]};
+const TYPES={guindaste:["Guindaste","--gu"],ormig:["Ormig","--or"],guindauto:["Guindauto","--ga"],empilhadeira:["Empilhadeira","--em"],cavalo:["Cavalo","--ca"]};
+const ORDER=["ormig","guindaste","guindauto","empilhadeira","cavalo"],PADRAO=52,MN="Manutenção - Vale";
+const typ=c=>c.startsWith("40/")?"guindaste":c.startsWith("76/")?"empilhadeira":c.startsWith("80/")?"guindauto":c.startsWith("46/")?"ormig":"guindaste";
+const KL={E:"Eventual",R:"Reserva"},LBL=n=>n==="Disponível"?"Disponível - Vale":n;
+const nr=t=>{t=String(t||"");return(t.length>2&&t===t.toUpperCase()&&t!==t.toLowerCase())?t.toLowerCase().replace(/(^\s*|[.!?]\s+)(\p{L})/gu,(m,a,b)=>a+b.toUpperCase()):t};const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const init=()=>{const d={};NAMES.forEach(n=>d[n]=(CODES[n]||[]).map((code,i)=>({id:n+"-"+i+"-"+code,code,cat:typ(code),...(n==="Vistoria MEV"?{mevExpired:true}:{})})));d["Disponível - Filial"][0].mev="2026-09-09";return d};
+const KEY="programacao-equipamentos-state-v4";
+const valid=v=>v&&typeof v==="object"&&NAMES.every(n=>Array.isArray(v[n])&&v[n].every(x=>x&&typeof x.code==="string"&&typeof x.id==="string"&&typeof x.cat==="string"));
+let data;try{const s=JSON.parse(localStorage.getItem(KEY));data=valid(s)?s:init()}catch(e){data=init()}
+let aw=false,dl=null,drag=null,editing=null,filt=new Set(),ready=false,snap=null,tmr=null,busy=false;
+/* ordem: tonelada/capacidade (2º número) do maior p/ o menor; empate: perfil e depois quantidade (maior p/ menor) */
+const nat=(a,b)=>{const x=a.split("/").map(Number),y=b.split("/").map(Number);return(y[1]||0)-(x[1]||0)||(y[0]||0)-(x[0]||0)||(y[2]||0)-(x[2]||0)};
+const find=id=>{for(const n of NAMES){const i=data[n].findIndex(x=>x.id===id);if(i>=0)return{n,i,x:data[n][i]}}};
+const delMirror=id=>NAMES.forEach(n=>{data[n]=data[n].filter(y=>y.mirrorOf!==id)}),getMirror=id=>NAMES.flatMap(n=>data[n]).find(y=>y.mirrorOf===id);
+const heal=()=>{let ch=false;NAMES.forEach(n=>data[n].forEach(x=>{const c=x.corrective;if(c&&!x.mirrorOf&&!x.na&&c.reason==="Não atendimento"&&!c.start&&!c.end){delete x.corrective;ch=true}}));return ch};
+const mevSt=m=>{if(!m)return"";const t=new Date();t.setHours(0,0,0,0);const d=Math.round((new Date(m+"T00:00:00")-t)/864e5);return d<0?"over":d<=2?"soon":""};
+const fd=m=>m?m.split("-").reverse().join("/"):"";
+const fdt=v=>v?new Date(v).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"—";
+function cd(end){if(!end)return"—";let ms=new Date(end)-Date.now();if(isNaN(ms))return"—";const late=ms<0;ms=Math.abs(ms);const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4),s=Math.floor(ms%6e4/1e3);const p=n=>String(n).padStart(2,"0");return(late?"Atrasado ":"")+p(h)+":"+p(m)+":"+p(s)}
+function render(){
+ const q=$("q").value.toLowerCase(),all=NAMES.flatMap(n=>data[n]);
+ const cor=all.filter(x=>x.corrective).length,mv=all.filter(x=>mevSt(x.mev)).length;
+ const PLN=["Usina - Habitual","Usina - Eventual","Porto - Habitual","Porto - Eventual","Vagões","Locomotivas","Pátio de Insumo"],prog=PLN.reduce((s,n)=>s+data[n].filter(x=>!x.na).length,0),progAll=PLN.reduce((s,n)=>s+data[n].length,0);
+ const disp=data["Disponível"].length+data["Vistoria MEV"].length+data["Disponível - Filial"].length;
+ $("kpis").innerHTML=[["Programados",prog+"/"+progAll]].map(([l,v,a])=>`<div class="kpi ${a?"alert":""}"><b>${v}</b><span>${l}</span></div>`).join("");
+ const nf=SECS[3].l,pg=NAMES.filter(n=>!nf.includes(n)).flatMap(n=>data[n]),er=t=>{const c=k=>pg.filter(x=>x.cat===t&&x.kind===k&&!x.mirrorOf).length,e=c("E"),r=c("R");return(e?` <b class="ke">E${e}</b>`:"")+(r?` <b class="kr">R${r}</b>`:"")};
+ $("leg").innerHTML=ORDER.map(t=>`<div class="lg ${filt.has(t)?"off":""}" data-t="${t}"><i style="background:var(${TYPES[t][1]})"></i>${TYPES[t][0]} ${pg.filter(x=>x.cat===t&&!x.mirrorOf).length}${er(t)}</div>`).join("");
+ $("board").innerHTML=SECS.map((s,i)=>`<section class="col c${i}"><div class="ct">${s.t}<em>${s.l.reduce((a,n)=>a+data[n].length,0)}</em></div><div class="lanes" style="--n:${s.n||1}">${s.l.map(n=>{
+  const list=data[n].filter(x=>!filt.has(x.cat)&&(!q||x.code.toLowerCase().includes(q))).sort((a,b)=>ORDER.indexOf(a.cat)-ORDER.indexOf(b.cat)||nat(a.code,b.code));
+  return`<div class="lane${list.length?"":" vz"}" data-l="${esc(n)}"><div class="lh" draggable="true" data-lane="${esc(n)}" title="Arraste para mover este quadro"><span>⠿ ${esc(LBL(n))}</span>${(()=>{const k=data[n].filter(x=>x.na).length;return k?`<span><b style="color:#fca5a5">-${k}</b>/${data[n].length}</span>`:`<span>${data[n].length}</span>`})()}</div><div class="chips">${list.length?ORDER.filter(t=>list.some(x=>x.cat===t)).map(t=>`<div class="tg" style="--t:var(${TYPES[t][1]})"><div class="th"><span>${TYPES[t][0]}</span><span>${(()=>{const L=list.filter(x=>x.cat===t),e=L.filter(x=>x.kind==="E").length,r=L.filter(x=>x.kind==="R").length;return L.length+(i!==3?(e?` <b class="ke">E${e}</b>`:"")+(r?` <b class="kr">R${r}</b>`:""):"")})()}</span></div><div class="cl">${list.filter(x=>x.cat===t).map(x=>{const ms=mevSt(x.mev);
+   return`<div class="chip ${x.corrective?"cor":""} ${x.na?"na":""} ${x.mirrorOf?"mir":""} ${x.corrective&&x.corrective.end&&new Date(x.corrective.end)<Date.now()?"late":""} ${ms==="soon"?"soon":ms==="over"?"over-due":""}" style="--t:var(${(TYPES[x.cat]||TYPES.guindaste)[1]})" draggable="true" data-id="${esc(x.id)}">${esc(x.code)}${x.na?`<small class="nat">⚠ NÃO ATENDIMENTO${getMirror(x.id)?" · 🔧 em manutenção":""}</small>`:""}${x.mirrorOf?`<small class="mt2">🔁 Espelho · não atendimento${(find(x.mirrorOf)||{}).n?" · "+esc(find(x.mirrorOf).n):""}</small>`:""}${x.kind&&!(x.kind==="E"&&/Eventual$/.test(n))?`<small class="kd kd${esc(x.kind)}">${esc(KL[x.kind]||x.kind)}</small>`:""}${x.mev?`<small>MEV ${fd(x.mev)}${ms==="over"?" · VENCIDO":ms==="soon"?" · vence":""}</small>`:""}${x.mevExpired&&!x.mev?`<small>MEV vencido</small>`:""}${x.corrective?`<small>🔧 ${esc(nr(x.corrective.reason||"Corretiva"))}</small>${x.corrective.start?`<small>Início da corretiva: ${fdt(x.corrective.start)}</small>`:""}${x.corrective.aw?`<small class="aw">Previsão de liberação: Aguardando previsão</small>`:x.corrective.end?`<small>Previsão de liberação: ${fdt(x.corrective.end)}</small><small class="tk" data-e="${esc(x.corrective.end)}">${cd(x.corrective.end)}</small>`:""}`:""}</div>`}).join("")}</div></div>`).join(""):'<span class="empty">vazio</span>'}</div></div>`}).join("")}</div></section>`).join("");
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}if(ready){clearTimeout(tmr);tmr=setTimeout(push,350)}render()}
+/* nuvem (mesma tabela do painel anterior) */
+const U="https://ljwsocbdojdnzczyyvvs.supabase.co",K="sb_publishable_RZavfhJhHYKy-pZbf4VhPg_Kp8eE3Hu",H={apikey:K,Authorization:"Bearer "+K,"Content-Type":"application/json"};
+const st=(m,ok)=>{$("st").textContent=m;$("st").style.color=ok?"#34d399":""};
+async function pull(){const r=await fetch(U+"/rest/v1/programacao?select=state,dados&id=eq.1",{headers:H,cache:"no-store"});if(!r.ok)throw new Error(r.status);const j=await r.json();return j[0]&&(valid(j[0].state)?j[0].state:valid(j[0].dados)?j[0].dados:null)}
+async function push(){busy=true;try{const r=await fetch(U+"/rest/v1/programacao?id=eq.1",{method:"PATCH",headers:{...H,Prefer:"return=minimal"},body:JSON.stringify({state:data,dados:data,updated_at:new Date().toISOString()})});if(!r.ok)throw 0;snap=JSON.stringify(data);st("Sincronizado ✓ "+new Date().toLocaleTimeString("pt-BR"),1)}catch(e){st("Falha ao sincronizar — verifique a conexão")}busy=false}
+async function boot(){try{const r=await pull();if(r){data=r;NAMES.forEach(n=>data[n]=data[n]||[]);snap=JSON.stringify(data);render()}ready=true;if(heal())save();st("Sincronizado ✓",1)}catch(e){st("Modo offline (dados locais)")}
+ setInterval(async()=>{if(!ready||busy||drag||editing!==null||$("mb").classList.contains("open"))return;try{const r=await pull();if(r&&JSON.stringify(r)!==snap){data=r;snap=JSON.stringify(r);render()}}catch(e){}},5000)}
+/* interação */
+const B=$("board");
+B.addEventListener("dragstart",e=>{const h=e.target.closest(".lh");if(h){dl=h.dataset.lane;e.dataTransfer.setData("text/lane",dl);return}const c=e.target.closest(".chip");if(c){drag=c.dataset.id;e.dataTransfer.setData("text/plain",drag)}});
+B.addEventListener("dragend",()=>{drag=null;dl=null;document.querySelectorAll(".over").forEach(l=>l.classList.remove("over"))});
+B.addEventListener("dragover",e=>{if(dl){const c=e.target.closest(".col");if(c){e.preventDefault();document.querySelectorAll(".over").forEach(x=>x.classList.remove("over"));(e.target.closest(".lane")||c).classList.add("over")}return}const l=e.target.closest(".lane");if(l&&drag){e.preventDefault();document.querySelectorAll(".over").forEach(x=>x.classList.remove("over"));l.classList.add("over")}});
+B.addEventListener("drop",e=>{if(dl){e.preventDefault();const tl=e.target.closest(".lane"),col=e.target.closest(".col");if(!col||(tl&&tl.dataset.l===dl)){dl=null;return render()}
+ const ci=[...B.children].indexOf(col);SECS.forEach(s=>s.l=s.l.filter(n=>n!==dl));
+ if(tl){const r=tl.getBoundingClientRect(),i=SECS[ci].l.indexOf(tl.dataset.l);SECS[ci].l.splice(e.clientY>r.top+r.height/2?i+1:i,0,dl)}else SECS[ci].l.push(dl);
+ dl=null;return saveLayout()}
+const l=e.target.closest(".lane");if(!l||!drag)return;e.preventDefault();const f=find(drag);if(f&&f.n!==l.dataset.l&&!(f.x.mirrorOf&&!l.dataset.l.startsWith("Manutenção"))){const[x]=data[f.n].splice(f.i,1);delete x.mevExpired;data[l.dataset.l].push(x);if(x.na&&l.dataset.l.startsWith("Manutenção")){delete x.na;delMirror(x.id)}save()}drag=null});
+B.addEventListener("click",e=>{const c=e.target.closest(".chip");if(c)openM(c.dataset.id)});
+$("leg").addEventListener("click",e=>{const g=e.target.closest(".lg");if(!g)return;filt.has(g.dataset.t)?filt.delete(g.dataset.t):filt.add(g.dataset.t);render()});
+$("q").oninput=render;$("rl").onclick=()=>{try{localStorage.removeItem(LK)}catch(e){}location.reload()};
+$("fl").innerHTML=NAMES.map(n=>`<option value="${n}">${LBL(n)}</option>`).join("");
+const tl=v=>{if(!v)return"";const d=new Date(v);return isNaN(d)?"":new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,16)};
+function openM(id){let f=id?find(id):null;if(f&&f.x.mirrorOf&&find(f.x.mirrorOf))return openM(f.x.mirrorOf);editing=id;const x=f?f.x:{},mr=f&&x.na?getMirror(x.id):null,c=x.corrective||(mr&&mr.corrective)||{};$("fna").checked=!!x.na;{const ml=mr?NAMES.find(n=>data[n].includes(mr)):null;$("fml").value=x.na?(ml||""):MN;$("fmlw").style.display=x.na?"":"none"}
+ $("mt").textContent=f?"Frota "+x.code:"Nova frota";$("fc").value=x.code||"";$("fc").disabled=!!f;$("ft").value=x.cat||"guindaste";
+ $("fl").value=f?f.n:"Disponível";$("fk").value=x.kind||"";$("fm").value=x.mev||"";$("fmx").checked=!!x.mevExpired&&!x.mev;$("fr").value=c.reason==="Não atendimento"?"":(c.reason||"");$("fs").value=tl(c.start);$("fe").value=tl(c.end);setAw(!!c.aw);
+ $("fx").style.display=$("fd").style.display=f?"":"none";$("mb").classList.add("open");tick()}
+const closeM=()=>{$("mb").classList.remove("open");editing=null};
+$("add").onclick=()=>openM(null);$("fc2").onclick=closeM;$("mb").onclick=e=>{if(e.target===$("mb"))closeM()};
+$("fna").onchange=()=>{$("fmlw").style.display=$("fna").checked?"":"none"};
+$("fv").onclick=()=>{let x,f=editing?find(editing):null;
+ if(f)x=f.x;else{const code=$("fc").value.trim();if(!code)return $("fc").focus();x={id:"n-"+Date.now()+"-"+code,code,cat:$("ft").value}}
+ if(f)x.cat=$("ft").value;x.kind=$("fk").value||undefined;x.mev=$("fm").value||undefined;if(x.mev||!$("fmx").checked)delete x.mevExpired;else x.mevExpired=true;
+ const r=$("fr").value.trim(),s=$("fs").value,e=aw?"":$("fe").value;const na=$("fna").checked&&!$("fl").value.startsWith("Manutenção"),corr=(r||s||e||aw||na)?{reason:r||(na?"Não atendimento":""),start:s,end:e,...(aw?{aw:true}:{})}:undefined;delMirror(x.id);if(na){x.na=true;x.corrective=undefined;}else{delete x.na;x.corrective=corr}
+ if(!x.kind)delete x.kind;if(!x.mev)delete x.mev;if(!x.corrective)delete x.corrective;
+ const to=$("fl").value,g=f?find(x.id):null;if(g){if(g.n!==to){data[g.n].splice(g.i,1);data[to].push(x)}}else data[to].push(x);
+ if(na&&$("fml").value)data[$("fml").value].push({id:"m-"+x.id,code:x.code,cat:x.cat,mirrorOf:x.id,corrective:corr});closeM();save()};
+$("fmc").onclick=()=>{$("fm").value="";$("fmx").checked=false};
+function setAw(v){aw=v;$("fw").classList.toggle("on",v);$("fw").textContent=v?"✓ Aguardando previsão (clique para remover)":"Aguardando previsão";$("fe").disabled=v;if(v)$("fe").value=""}
+$("fw").onclick=()=>{setAw(!aw);tick()};
+$("fx").onclick=()=>{const f=find(editing);if(f){delete f.x.corrective;const m=f.x.na&&getMirror(f.x.id);if(m)m.corrective={reason:"Não atendimento"};$("fr").value="";$("fs").value="";$("fe").value="";setAw(false);tick();save()}};
+$("fd").onclick=()=>{const f=find(editing);if(f&&confirm("Excluir a frota "+f.x.code+"?")){data[f.n].splice(f.i,1);delMirror(f.x.id);closeM();save()}};
+$("exp").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,1)],{type:"application/json"}));a.download="backup-programacao-"+new Date().toISOString().slice(0,10)+".json";a.click()};
+function tick(){$("clock").textContent=new Date().toLocaleString("pt-BR",{weekday:"long",day:"2-digit",month:"long",hour:"2-digit",minute:"2-digit"});
+ document.querySelectorAll(".tk").forEach(e=>{e.textContent=cd(e.dataset.e);const c=e.closest(".chip");if(c)c.classList.toggle("late",new Date(e.dataset.e)<Date.now())});
+ if($("mb").classList.contains("open"))$("tm").textContent=aw?"Aguardando previsão":cd($("fe").value)}
+let fitC=null;
+const exitTv=()=>{try{document.fullscreenElement&&document.exitFullscreen()}catch(e){}const u=new URL(location.href);u.searchParams.delete("tv");location.replace(u.pathname+u.search+u.hash)};
+let TS=1;
+function stage(){const b=document.body,H=1080,VW=Math.round(H*innerWidth/innerHeight);TS=innerHeight/H;
+ document.documentElement.style.cssText='overflow:hidden;background:#0a0f1c;height:100%';
+ b.style.cssText+=';position:absolute;left:0;top:0;width:'+VW+'px;height:'+H+'px;transform-origin:0 0;transform:'+(b.dataset.sh||'')+' scale('+TS+')';return[VW,H]}
+function fit(){if(!document.body.classList.contains("tv"))return;
+ const [VW,VH]=stage(),m=$("board"),cols=[...m.querySelectorAll(".col")];if(!cols.length)return;
+ const cs=getComputedStyle(m),gap=parseFloat(cs.columnGap)||12,
+  avail=m.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-gap*(cols.length-1),
+  CW=6.6,HW=8.6,SG=.4,cap=Math.max(12,VH*.036);
+ const nOf=c=>+(c.querySelector(".lanes").style.getPropertyValue("--n")||1);
+ const ovh=cols.map(c=>{const n=nOf(c);return 2+16+n*18+(n-1)*8});
+ const tgs=[...m.querySelectorAll(".tg")].map(t=>({t,n:t.querySelectorAll(".chip").length}));
+ const need=R=>cols.map(c=>{let mx=0;
+  c.querySelectorAll(".chips").forEach(ch=>{let w=0,g=0;ch.querySelectorAll(".tg").forEach(t=>{const k=t.querySelectorAll(".chip").length,sc=Math.ceil(k/R);w+=Math.max(sc*CW+(sc-1)*SG,HW);g++});if(g)w+=(g-1)*SG;mx=Math.max(mx,w)});return Math.max(mx,CW+.2,c.classList.contains("c0")?13:0)*nOf(c)});
+ const apply=(R,fs)=>{tgs.forEach(({t,n})=>{const sc=Math.max(1,Math.ceil(n/R)),rr=Math.ceil(n/sc);t.style.setProperty("--sc",sc);t.style.setProperty("--rr",rr)});
+  const nd=need(R);m.style.setProperty("--fs",fs+"px");m.style.gridTemplateColumns=nd.map((x,i)=>"minmax(0,"+(x*fs+ovh[i]).toFixed(2)+"fr)").join(" ")};
+ const bad=()=>[...m.querySelectorAll(".lanes")].some(l=>{const lb=l.getBoundingClientRect().bottom-4*TS;return l.scrollHeight>l.clientHeight+1||[...l.children].some(c=>c.getBoundingClientRect().bottom>lb)})||[...m.querySelectorAll(".chip")].some(e=>e.scrollWidth>e.clientWidth+1);
+ const done=(R,fs)=>{fs*=.96;apply(R,fs);for(let k=0;k<30&&bad();k++){fs*=.97;apply(R,fs)}$("mb").style.setProperty("--mfs",Math.min(40,Math.max(14,fs*1.1))+"px");return fs};
+ const sig=m.innerHTML.length+"|"+VW+"x"+VH;
+ if(fitC&&fitC.sig===sig)return done(fitC.R,fitC.fs);
+ let best={R:999,fs:3};
+ for(const R of [999]){/* 1 coluna por grupo: nunca divide em 2 blocos */
+  const nd=need(R),hi0=Math.min(cap,(avail-ovh.reduce((a,b)=>a+b,0))/nd.reduce((a,b)=>a+b,0)*.99);
+  if(hi0<=best.fs)continue;
+  apply(R,hi0);if(!bad()){best={R,fs:hi0};continue}
+  let lo=best.fs,hi=hi0;apply(R,lo);if(bad())continue;
+  for(let k=0;k<9;k++){const mid=(lo+hi)/2;apply(R,mid);bad()?hi=mid:lo=mid}
+  if(lo>best.fs)best={R,fs:lo}}
+ fitC={sig,R:best.R,fs:best.fs};done(best.R,best.fs)}
+const _r=render;render=function(){_r();fit()};
+addEventListener("resize",fit);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{fitC=null;fit()});setTimeout(()=>{fitC=null;fit()},1500);$("tvb").onclick=()=>{location.search="?tv=1"};
+if(document.body.classList.contains("tv")){
+ document.querySelector("header").insertBefore($("leg"),$("kpis"));
+ {const tb=document.createElement("div");tb.className="tvbar";const xb=document.createElement("button");xb.textContent="Sair do modo TV";xb.onclick=e=>{e.stopPropagation();exitTv()};$("q").placeholder="Buscar frota…";tb.append($("q"),xb);document.querySelector("header").insertBefore(tb,$("leg"))}
+ {let mt;addEventListener("mousemove",()=>{document.body.classList.add("mv");clearTimeout(mt);mt=setTimeout(()=>document.body.classList.remove("mv"),4000)})}
+ let wlk=null;const wl=()=>{try{if(navigator.wakeLock&&(!wlk||wlk.released))navigator.wakeLock.request("screen").then(k=>{wlk=k;k.addEventListener("release",()=>{wlk=null})}).catch(()=>{})}catch(e){}};wl();document.addEventListener("visibilitychange",()=>{if(!document.hidden)wl()});setInterval(wl,60000);
+ /* reforço: vídeo mudo invisível em loop (mesma técnica do NoSleep.js) para a TV/navegador entenderem que há reprodução ativa */
+ try{const cv=document.createElement("canvas");cv.width=cv.height=16;const cx=cv.getContext("2d");let t=0;setInterval(()=>{t^=1;cx.fillStyle=t?"#0a0f1c":"#0a0f1d";cx.fillRect(0,0,16,16)},1000);
+  if(cv.captureStream){const v=document.createElement("video");v.muted=true;v.defaultMuted=true;v.setAttribute("playsinline","");v.setAttribute("muted","");v.srcObject=cv.captureStream(1);v.style.cssText="position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1";document.body.appendChild(v);const pl=()=>{const r=v.play();r&&r.catch&&r.catch(()=>{})};pl();["click","keydown","touchend"].forEach(e=>addEventListener(e,pl));setInterval(()=>{if(v.paused)pl()},30000)}}catch(e){}
+ setTimeout(()=>location.reload(),6*36e5);
+ setInterval(()=>{const d=[[0,0],[3,2],[-3,3],[2,-3],[-2,-2]],p=d[Math.floor(Date.now()/6e4)%5];document.body.dataset.sh="translate("+p[0]+"px,"+p[1]+"px)";document.body.style.transform=document.body.dataset.sh+" scale("+TS+")"},6e4)}
+
+if(document.body.classList.contains("tv")){
+ const goFS=()=>{const e=document.documentElement;if(!document.fullscreenElement){const f=e.requestFullscreen||e.webkitRequestFullscreen;if(f)try{const r=f.call(e,{navigationUI:"hide"});r&&r.catch&&r.catch(()=>{})}catch(x){}}};
+ let wasFS=false;
+ const sync=()=>{const on=!!(document.fullscreenElement||document.webkitFullscreenElement);if(wasFS&&!on)return exitTv();wasFS=on;document.body.classList.toggle("isfs",on);fit()};
+ ["click","keydown","touchend"].forEach(t=>addEventListener(t,goFS));
+ document.addEventListener("fullscreenchange",sync);document.addEventListener("webkitfullscreenchange",sync);
+ addEventListener("resize",sync);sync()}
+setInterval(tick,1000);setInterval(render,60000);
+render();tick();boot();
+{const rf=()=>{fitC=null;fit()};rf();setTimeout(rf,600);if(window.ResizeObserver)new ResizeObserver(rf).observe(document.querySelector("header"))}
+</script>
+<script>
+/* ===== v10: painel executivo (usa data, TYPES, ORDER e render existentes) ===== */
+(function(){
+ const box=document.createElement("div");box.className="dash";box.id="dash";$("board").before(box);
+ const prev={},PL=["Usina - Habitual","Usina - Eventual","Porto - Habitual","Porto - Eventual","Vagões","Locomotivas","Pátio de Insumo"];
+ const cnt=(el,to)=>{const f=+el.dataset.v||0;el.dataset.v=to;if(f===to){el.textContent=to;return}const t0=performance.now();(function st(t){const k=Math.min(1,(t-t0)/600);el.textContent=Math.round(f+(to-f)*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(st)})(t0)};
+ function dash(){
+  const L=n=>data[n]||[],real=n=>L(n).filter(x=>!x.mirrorOf),NF=SECS[3].l,all=NAMES.filter(n=>!NF.includes(n)).flatMap(n=>L(n));
+  const progAll=PL.reduce((a,n)=>a+real(n).length,0),prog=PL.reduce((a,n)=>a+real(n).filter(x=>!x.na).length,0);
+  const disp=L("Disponível").length+L("Vistoria MEV").length;
+  const man=L("Manutenção - Vale").length;
+  const na=all.filter(x=>x.na).length,cor=all.filter(x=>x.corrective).length,mev=all.filter(x=>mevSt(x.mev)||x.mevExpired).length;
+  const tot=all.filter(x=>!x.mirrorOf).length||1,pct=Math.round(prog/Math.max(1,prog+disp)*100);
+  const C=[["Programados",prog,"de "+progAll+" na escala","#9fd08a",progAll?prog/progAll*100:0,0],
+   ["Disponíveis",disp,pct+"% da frota ativa em campo","#d5e63a",disp/tot*100,0],
+   ["Em manutenção",man,cor+" corretiva(s) em andamento","#ef4444",man/tot*100,cor>0],
+   ["Não atendimento",na,na?"posto sem equipamento":"tudo atendido","#ec4899",na/Math.max(1,progAll)*100,na>0],
+   ["MEV vencido / a vencer",mev,"vistoria requer atenção","#facc15",mev/tot*100,mev>0]];
+  const mix=ORDER.map(t=>[t,PL.flatMap(n=>real(n)).filter(x=>x.cat===t&&!x.na).length]).filter(a=>a[1]);
+  const html=C.map((c,i)=>`<div class="dc${c[5]?" al":""}" style="--c:${c[3]}"><small>${c[0]}</small><b data-k="${i}" data-v="${prev[i]||0}">${prev[i]||0}</b><i>${c[2]}</i><div class="pb"><u style="width:${Math.min(100,c[4]).toFixed(0)}%"></u></div></div>`).join("")
+   +`<div class="dc mix" style="--c:#60a5fa"><small>Equipamentos programados por tipo</small><div class="sb">${mix.map(([t,n])=>`<span style="flex:${n};background:var(${TYPES[t][1]})" title="${TYPES[t][0]} ${n}"></span>`).join("")}</div><div class="sl">${mix.map(([t,n])=>`<em style="--t:var(${TYPES[t][1]})">${TYPES[t][0]} <b style="display:inline;font-size:inherit">${n}</b></em>`).join("")}</div></div>`;
+  box.innerHTML=html;box.querySelectorAll("b[data-k]").forEach(b=>{const k=+b.dataset.k;b.dataset.v=prev[k]||0;b.textContent=prev[k]||0;cnt(b,C[k][1]);prev[k]=C[k][1]});
+ }
+ const r0=render;render=function(){r0.apply(this,arguments);try{dash()}catch(e){}if(document.body.classList.contains("tv")&&typeof fit==="function")try{fitC=null;fit()}catch(e){}};
+ render();
+})();
+</script>
+<script>
+/* ===== v11: mantém o painel sempre no topo, sem rolagem escondida (TV) ===== */
+(function(){if(!document.body.classList.contains("tv"))return;
+ const z=()=>{scrollTo(0,0);document.querySelectorAll("#board,#board .col,#board .lanes").forEach(e=>{if(e.scrollTop)e.scrollTop=0;if(e.scrollLeft)e.scrollLeft=0})};
+ setInterval(z,5000);addEventListener("resize",z);addEventListener("scroll",z,true);z()})();
+/* v11b: vigia o tamanho real da janela e reajusta sozinho (TVs avisam o tamanho tarde ou nem avisam) */
+(function(){if(!document.body.classList.contains("tv"))return;
+ const key=()=>[innerWidth,innerHeight,document.documentElement.clientWidth,document.documentElement.clientHeight,window.visualViewport?Math.round(visualViewport.width)+"x"+Math.round(visualViewport.height):0].join("|");
+ let k=key();const refit=()=>{try{fitC=null;fit()}catch(e){}};
+ setInterval(()=>{const n=key();if(n!==k){k=n;refit();setTimeout(refit,400);setTimeout(refit,1500)}},1000);
+ setInterval(refit,30000);
+ ["fullscreenchange","webkitfullscreenchange","orientationchange","pageshow","focus"].forEach(e=>addEventListener(e,()=>{setTimeout(refit,300);setTimeout(refit,1500)}));
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden)setTimeout(refit,300)});
+ if(window.visualViewport)visualViewport.addEventListener("resize",refit)})();
+</script>
+</body></html>
